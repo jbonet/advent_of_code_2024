@@ -1,0 +1,7 @@
+services:
+  runner:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - ./:/app
