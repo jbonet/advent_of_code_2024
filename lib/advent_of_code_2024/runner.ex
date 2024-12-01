@@ -1,28 +1,43 @@
 defmodule AdventOfCode2024.Runner do
-  @callback parse_input(arg :: File.Stream.t()) :: any
-  @callback get_day() :: integer
-  @callback run(sample? :: boolean) :: any
-  @callback part1(input :: any) :: any
-  @callback part2(input :: any) :: any
-  @optional_callbacks part1: 1, part2: 1
+  require Logger
 
-  defmacro __using__(_opts) do
-    quote do
-      @behaviour AdventOfCode2024.Runner
+  def run(:all), do: run_all(Application.get_env(:advent_of_code_2024, :sample_data))
+  def run(_), do: run_today(Application.get_env(:advent_of_code_2024, :sample_data))
 
-      defp get_input(sample?) do
-        sample?
-        |> get_file()
-        |> File.stream!()
-        |> parse_input()
-      end
+  defp run_all(sample?) do
+    Logger.info("#{if sample?, do: "[SAMPLE]"} Executing ALL Puzzles")
 
-      defp get_file(sample?) do
-        "inputs/day" <> "#{get_day()}" <> get_extension(sample?)
-      end
+    today = get_today()
 
-      defp get_extension(true), do: ".sample" <> get_extension(false)
-      defp get_extension(false), do: ".txt"
-    end
+    Enum.each(1..today, fn day ->
+      Logger.info("Day #{day}")
+
+      execute(day)
+    end)
+  end
+
+  defp run_today(sample?) do
+    Logger.info("#{if sample?, do: "[SAMPLE]"} Executing todays Puzzle")
+    today = get_today()
+
+    execute(today)
+  end
+
+  defp execute(day) do
+    {part1, part2} = day |> get_module_name() |> apply(:run, [])
+
+    Logger.info("Result - Part 1: #{part1}, Part 2: #{part2}")
+  end
+
+  defp get_module_name(day) do
+    day_string = Integer.to_string(day) |> String.pad_leading(2, "0")
+
+    Module.concat(["AdventOfCode2024.Days.Day#{day_string}"])
+  end
+
+  defp get_today() do
+    today = "Europe/Madrid" |> DateTime.now!() |> DateTime.to_date()
+
+    today.day
   end
 end

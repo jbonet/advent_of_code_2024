@@ -1,8 +1,8 @@
-defmodule AdventOfCode2024.Days.One do
-  use AdventOfCode2024.Runner
+defmodule AdventOfCode2024.Days.Day01 do
+  use AdventOfCode2024.Puzzle
 
-  def run(sample? \\ false) do
-    input = get_input(sample?)
+  def run() do
+    input = get_input()
 
     {part1(input), part2(input)}
   end
