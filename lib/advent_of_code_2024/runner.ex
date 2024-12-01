@@ -5,7 +5,7 @@ defmodule AdventOfCode2024.Runner do
   def run(_), do: run_today(Application.get_env(:advent_of_code_2024, :sample_data))
 
   defp run_all(sample?) do
-    Logger.info("#{if sample?, do: "[SAMPLE]"} Executing ALL Puzzles")
+    Logger.info("#{if sample?, do: "[SAMPLE] "}Executing ALL Puzzles")
 
     today = get_today()
 
@@ -17,7 +17,7 @@ defmodule AdventOfCode2024.Runner do
   end
 
   defp run_today(sample?) do
-    Logger.info("#{if sample?, do: "[SAMPLE]"} Executing todays Puzzle")
+    Logger.info("#{if sample?, do: "[SAMPLE] "}Executing todays Puzzle")
     today = get_today()
 
     execute(today)
