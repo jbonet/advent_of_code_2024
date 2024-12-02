@@ -1,14 +1,6 @@
 defmodule AdventOfCode2024.Days.Day01 do
   use AdventOfCode2024.Puzzle
 
-  def run() do
-    input = get_input()
-
-    {part1(input), part2(input)}
-  end
-
-  def get_day, do: 1
-
   def part1({input_A, input_B}) do
     Enum.zip(Enum.sort(input_A), Enum.sort(input_B))
     |> Stream.map(fn {a, b} -> abs(a - b) end)
