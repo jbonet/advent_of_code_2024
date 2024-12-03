@@ -12,7 +12,7 @@ defmodule AdventOfCode2024.Puzzle do
       require Logger
 
       def run() do
-        Logger.info("Start running puzzle: #{ __MODULE__|> Module.split() |> List.last()}")
+        Logger.info("Start running puzzle: #{__MODULE__ |> Module.split() |> List.last()}")
         input = get_input()
 
         {part1(input), part2(input)}
