@@ -15,7 +15,7 @@ defmodule AdventOfCode2024.Puzzle do
         {part1(input), part2(input)}
       end
 
-      defp get_input() do
+      def get_input() do
         get_file()
         |> File.stream!()
         |> parse_input()
