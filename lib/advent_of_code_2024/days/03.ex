@@ -4,8 +4,7 @@ defmodule AdventOfCode2024.Days.Day03 do
   def part1(input) do
     input
     |> Stream.flat_map(fn l -> Regex.scan(~r/mul\(\d+,\d+\)/, String.trim(l)) |> List.flatten() end)
-    |> Stream.map(fn op -> Code.eval_string(Module.concat([__MODULE__, op])) |> elem(0) end)
-    |> Enum.sum()
+    |> get_result()
   end
 
   def part2(input) do
@@ -18,6 +17,11 @@ defmodule AdventOfCode2024.Days.Day03 do
       _, acc -> acc
     end)
     |> elem(0)
+    |> get_result()
+  end
+
+  defp get_result(operations) do
+    operations
     |> Stream.map(fn op -> Code.eval_string(Module.concat([__MODULE__, op])) |> elem(0) end)
     |> Enum.sum()
   end
