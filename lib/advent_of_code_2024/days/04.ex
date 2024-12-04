@@ -64,7 +64,10 @@ defmodule AdventOfCode2024.Days.Day04 do
   defp find_words(values, point, vector, results \\ [])
 
   defp find_words(_values, _point, _vector, nil), do: nil
-  defp find_words(_values, _point, _vector, results) when length(results) == 4, do: check_word(results)
+
+  defp find_words(_values, _point, _vector, results) when length(results) == 4,
+    do: check_word(results)
+
   defp find_words(values, {x, y} = point, {vx, vy} = vector, results) do
     current_letter = {point, Map.get(values, "#{x}-#{y}")}
 
