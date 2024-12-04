@@ -26,16 +26,8 @@ defmodule AdventOfCode2024.Days.Day04 do
   end
 
   defp get_words(values, {x, y}, "part1") do
-    [
-      find_words(values, {x, y}, {1, 0}),
-      find_words(values, {x, y}, {1, 1}),
-      find_words(values, {x, y}, {1, -1}),
-      find_words(values, {x, y}, {0, 1}),
-      find_words(values, {x, y}, {0, -1}),
-      find_words(values, {x, y}, {-1, 0}),
-      find_words(values, {x, y}, {-1, 1}),
-      find_words(values, {x, y}, {-1, -1})
-    ]
+    [{1, 0}, {1, 1}, {1, -1}, {0, 1}, {0, -1}, {-1, 0}, {-1, 1}, {-1, -1}]
+    |> Stream.map(fn vector -> find_words(values, {x, y}, vector) end)
     |> Enum.reject(&is_nil/1)
   end
 
