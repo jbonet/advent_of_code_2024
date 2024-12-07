@@ -39,7 +39,12 @@ defmodule AdventOfCode2024.Days.Day06 do
     |> Enum.map(fn {x, _} -> x end)
     |> MapSet.new()
     |> MapSet.to_list()
-    |> put_obstacles(input, starting_point)
+    |> Task.async_stream(
+      fn x -> input |> put_in_location(x, "O") |> move_guard(starting_point) end,
+      max_concurrency: 20
+    )
+    |> Stream.reject(fn {_, {res, _}} -> res == :ok end)
+    |> Enum.count()
   end
 
   defp move_guard(grid, location, visited \\ MapSet.new())
@@ -63,21 +68,6 @@ defmodule AdventOfCode2024.Days.Day06 do
         # Next position outside the grid, stop
         {:ok, visited}
     end
-  end
-
-  defp put_obstacles(locations, grid, starting_point, loops \\ 0)
-  defp put_obstacles([], _, _, loops), do: loops
-
-  defp put_obstacles([obstacle_location | rest], grid, starting_point, loops) do
-    result = grid |> put_in_location(obstacle_location, "O") |> move_guard(starting_point)
-
-    next_value =
-      case result do
-        {:error, :loop} -> loops + 1
-        _ -> loops
-      end
-
-    put_obstacles(rest, grid, starting_point, next_value)
   end
 
   defp get_next(grid, {x, y} = current_location, visited) do
