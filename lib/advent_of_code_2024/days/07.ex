@@ -10,7 +10,7 @@ defmodule AdventOfCode2024.Days.Day07 do
   end
 
   def check_equation(equations, symbols, result \\ 0)
-  def check_equation([], symbols, result), do: result
+  def check_equation([], _symbols, result), do: result
 
   def check_equation([equation | rest], symbols, result) do
     eq_result = do_check_equation(equation, symbols)
@@ -27,7 +27,7 @@ defmodule AdventOfCode2024.Days.Day07 do
 
   def try_operations(_, []), do: 0
 
-  def try_operations({result, operands} = equation, [operators | rest]) do
+  def try_operations({result, _operands} = equation, [operators | rest]) do
     if do_try_operations(equation, operators) == result do
       result
     else
