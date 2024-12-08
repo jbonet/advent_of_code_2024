@@ -2,7 +2,7 @@ defmodule AdventOfCode2024.Days.Day08 do
   use AdventOfCode2024.Puzzle
 
   def part1(grid) do
-    antinodes = grid
+    grid
     |> Enum.reduce(%{}, fn
       {_coords, "."}, acc ->
         acc
@@ -10,67 +10,39 @@ defmodule AdventOfCode2024.Days.Day08 do
       {coords, antenna}, acc ->
         Map.update(acc, antenna, [coords], fn x -> [coords | x] end)
     end)
-    |> Enum.flat_map(fn {antenna, locations} ->
-        for location1 <- locations, location2 <- locations, location1 != location2, do: {antenna, to_point(location1), to_point(location2)}
+    |> Stream.flat_map(fn {antenna, locations} ->
+      for location1 <- locations,
+          location2 <- locations,
+          location1 != location2,
+          do: {antenna, to_point(location1), to_point(location2)}
     end)
-    |> Enum.reduce([], fn {antenna, p1, p2} = x, acc ->
-      if {antenna, p2, p1} in acc, do: acc, else: [x | acc]
-    end)
-    |> IO.inspect(label: "Pairs")
-    |> Enum.reduce([], fn {antenna, {x1, y1} = p1, {x2, y2} = p2}, acc ->
+    |> Enum.reduce([], fn {_antenna, {x1, y1}, {x2, y2}}, acc ->
       {vx, vy} = v = {abs(x1 - x2), abs(y1 - y2)}
 
       antinodes =
         cond do
-          x1 < x2 and y1 < y2 -> [{x1 + -1 * vx, y1 + -1 * vy}, {x2 + vx, y2 + vx}]
-          x1 > x2 and y1 > y2 -> [{x1 + vx, y1 + vy}, {x2 - 1 * vx, y2 - 1* vy}]
+          x1 < x2 and y1 < y2 -> [{x1 + -1 * vx, y1 + -1 * vy}, {x2 + vx, y2 + vy}]
+          x1 > x2 and y1 > y2 -> [{x1 + vx, y1 + vy}, {x2 - 1 * vx, y2 - 1 * vy}]
           x1 < x2 and y1 > y2 -> [{x1 + -1 * vx, y1 + vy}, {x2 + vx, y2 + -1 * vy}]
           x1 > x2 and y1 < y2 -> [{x1 + vx, y1 + -1 * vy}, {x2 + -1 * vx, y2 + vy}]
         end
-        |> Enum.map(fn {x,y} -> {antenna, x, y} end)
-      IO.puts("Pair of antennas #{antenna}: #{inspect(p1)} - #{inspect(p2)} (vector: #{inspect(v)}) generates antinodes: #{inspect(antinodes)}")
 
-      acc ++ (antinodes)
+      acc ++ antinodes
     end)
-    |> IO.inspect(label: "Possible antinodes")
-    |> Enum.reduce([], fn antinode, acc ->
-      if valid_antinode?(grid, antinode) do
-        [antinode | acc]
-      else
-        acc
-      end
+    |> Enum.reduce([], fn {x, y}, acc ->
+      if Map.get(grid, "#{x}-#{y}", nil) != nil, do: [{x, y} | acc], else: acc
     end)
     |> MapSet.new()
     |> MapSet.to_list()
-    |> IO.inspect(label: "Valid antinodes")
-
-
-    Enum.reduce(antinodes, grid, fn antinode, grid ->
-      nil
-    end)
-
-
-    Enum.count(antinodes)
+    |> Enum.count()
   end
 
   def part2(_input) do
     0
   end
 
-  def valid_antinode?(grid, {_antenna, x, y} = antinode) do
-    current_value = Map.get(grid, "#{x}-#{y}", nil)
-
-    if current_value != nil and current_value != "." do
-      IO.puts("Checking antinode: #{inspect(antinode)} -> #{current_value}")
-    end
-
-    current_value != nil
-  end
-
-  def check_sign({x, y}) when x < 0 or y < 0, do: :neg
-  def check_sign(_), do: :pos
-
-  defp to_point(point_str), do: point_str |> String.split("-") |> Enum.map(&String.to_integer/1) |> List.to_tuple()
+  defp to_point(point_str),
+    do: point_str |> String.split("-") |> Enum.map(&String.to_integer/1) |> List.to_tuple()
 
   def parse_input(input) do
     parsed_input =
