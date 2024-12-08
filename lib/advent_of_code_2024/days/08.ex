@@ -16,10 +16,10 @@ defmodule AdventOfCode2024.Days.Day08 do
           location1 != location2,
           do: {antenna, to_point(location1), to_point(location2)}
     end)
-    |> Enum.reduce([], fn {_antenna, {x1, y1}, {x2, y2}}, acc ->
-      {vx, vy} = v = {abs(x1 - x2), abs(y1 - y2)}
+    |> Enum.reduce(MapSet.new(), fn {_antenna, {x1, y1}, {x2, y2}}, acc ->
+      {vx, vy} = {abs(x1 - x2), abs(y1 - y2)}
 
-      antinodes =
+      [antinode1, antinode2] =
         cond do
           x1 < x2 and y1 < y2 -> [{x1 + -1 * vx, y1 + -1 * vy}, {x2 + vx, y2 + vy}]
           x1 > x2 and y1 > y2 -> [{x1 + vx, y1 + vy}, {x2 - 1 * vx, y2 - 1 * vy}]
@@ -27,22 +27,24 @@ defmodule AdventOfCode2024.Days.Day08 do
           x1 > x2 and y1 < y2 -> [{x1 + vx, y1 + -1 * vy}, {x2 + -1 * vx, y2 + vy}]
         end
 
-      acc ++ antinodes
+      acc
+      |> maybe_add_antinode(grid, antinode1)
+      |> maybe_add_antinode(grid, antinode2)
     end)
-    |> Enum.reduce([], fn {x, y}, acc ->
-      if Map.get(grid, "#{x}-#{y}", nil) != nil, do: [{x, y} | acc], else: acc
-    end)
-    |> MapSet.new()
-    |> MapSet.to_list()
-    |> Enum.count()
+    |> MapSet.size()
   end
 
   def part2(_input) do
     0
   end
 
-  defp to_point(point_str),
-    do: point_str |> String.split("-") |> Enum.map(&String.to_integer/1) |> List.to_tuple()
+  defp maybe_add_antinode(antinodes, grid, {x,y} = antinode) do
+    if Map.get(grid, "#{x}-#{y}", nil) != nil, do: MapSet.put(antinodes, antinode), else: antinodes
+  end
+
+  defp to_point(point_str) do
+    point_str |> String.split("-") |> Enum.map(&String.to_integer/1) |> List.to_tuple()
+  end
 
   def parse_input(input) do
     parsed_input =
