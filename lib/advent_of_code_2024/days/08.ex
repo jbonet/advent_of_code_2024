@@ -22,11 +22,12 @@ defmodule AdventOfCode2024.Days.Day08 do
 
       antinodes =
         cond do
-          x1 < x2 and y1 < y2 -> [{x1 + -1 * vx, y1 + -1 * vy}, {x2 + vx, y2 + vy}]
-          x1 < x2 and y1 > y2 -> [{x1 + -1 * vx, y1 + vy}, {x2 + vx, y2 + -1 * vy}]
-          x1 > x2 and y1 < y2 -> [{x1 + vx, y1 + vy}, {x2 + -1 * vx, y2 + -1 * vy}]
+          x1 < x2 and y1 < y2 -> [{x1 + -1 * vx, y1 + -1 * vy}, {x2 + vx, y2 + vx}]
           x1 > x2 and y1 > y2 -> [{x1 + vx, y1 + vy}, {x2 - 1 * vx, y2 - 1* vy}]
+          x1 < x2 and y1 > y2 -> [{x1 + -1 * vx, y1 + vy}, {x2 + vx, y2 + -1 * vy}]
+          x1 > x2 and y1 < y2 -> [{x1 + vx, y1 + -1 * vy}, {x2 + -1 * vx, y2 + vy}]
         end
+        |> Enum.map(fn {x,y} -> {antenna, x, y} end)
       IO.puts("Pair of antennas #{antenna}: #{inspect(p1)} - #{inspect(p2)} (vector: #{inspect(v)}) generates antinodes: #{inspect(antinodes)}")
 
       acc ++ (antinodes)
@@ -39,6 +40,8 @@ defmodule AdventOfCode2024.Days.Day08 do
         acc
       end
     end)
+    |> MapSet.new()
+    |> MapSet.to_list()
     |> IO.inspect(label: "Valid antinodes")
 
 
@@ -54,8 +57,12 @@ defmodule AdventOfCode2024.Days.Day08 do
     0
   end
 
-  def valid_antinode?(grid, {x, y} = antinode) do
-    current_value = Map.get(grid, "#{x}-#{y}", nil) |> IO.inspect(label: "Checking for antinode #{inspect(antinode)}")
+  def valid_antinode?(grid, {_antenna, x, y} = antinode) do
+    current_value = Map.get(grid, "#{x}-#{y}", nil)
+
+    if current_value != nil and current_value != "." do
+      IO.puts("Checking antinode: #{inspect(antinode)} -> #{current_value}")
+    end
 
     current_value != nil
   end
