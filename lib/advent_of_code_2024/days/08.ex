@@ -1,46 +1,31 @@
 defmodule AdventOfCode2024.Days.Day08 do
   use AdventOfCode2024.Puzzle
 
-  def part1(grid) do
-    grid
-    |> generate_antinodes(false)
+  def part1({grid, antennas}) do
+    antennas
+    |> generate_antinodes(grid, false)
     |> MapSet.size()
   end
 
-  def part2(grid) do
-    res = grid |> generate_antinodes(true)
+  def part2({grid, antennas}) do
+    res = antennas |> generate_antinodes(grid, true)
 
-    grid
-    |> Enum.reduce(%{}, fn
-      {_coords, "."}, acc ->
-        acc
-
-      {coords, antenna}, acc ->
-        Map.update(acc, antenna, [coords], fn x -> [coords | x] end)
-    end)
+    antennas
     |> Enum.reduce(res, fn {_, points}, acc ->
       points
-      |> Enum.map(fn x -> to_point(x) end)
       |> MapSet.new()
       |> MapSet.union(acc)
     end)
     |> MapSet.size()
   end
 
-  def generate_antinodes(grid, with_harmonics) do
-    grid
-    |> Enum.reduce(%{}, fn
-      {_coords, "."}, acc ->
-        acc
-
-      {coords, antenna}, acc ->
-        Map.update(acc, antenna, [coords], fn x -> [coords | x] end)
-    end)
+  def generate_antinodes(antennas, grid, with_harmonics) do
+    antennas
     |> Stream.flat_map(fn {antenna, locations} ->
       for location1 <- locations,
           location2 <- locations,
           location1 != location2,
-          do: {antenna, to_point(location1), to_point(location2)}
+          do: {antenna, location1, location2}
     end)
     |> Enum.reduce(MapSet.new(), fn {_antenna, p1, p2}, acc ->
       grid
@@ -61,7 +46,7 @@ defmodule AdventOfCode2024.Days.Day08 do
     [{x1 + vx1, y1 + vy1}, {x2 + vx2, y2 + vy2}]
   end
 
-  defp do_generate_antinodes(grid, {x1, y1} = p1, {x2, y2} = p2, true) do
+  defp do_generate_antinodes(grid, p1, p2, true) do
     {v1, v2} = get_vectors(p1, p2)
 
     [get_next_antinode(grid, p1, v1), get_next_antinode(grid, p2, v2)] |> List.flatten()
@@ -69,8 +54,8 @@ defmodule AdventOfCode2024.Days.Day08 do
 
   def get_next_antinode(grid, point, vector, results \\ [])
 
-  def get_next_antinode(grid, {x, y} = point, {vx, vy} = vector, results) do
-    {ax, ay} = next_antinode = {x + vx, y + vy}
+  def get_next_antinode(grid, {x, y}, {vx, vy} = vector, results) do
+    next_antinode = {x + vx, y + vy}
 
     if point_in_grid?(grid, next_antinode) do
       get_next_antinode(grid, next_antinode, vector, [next_antinode | results])
@@ -105,12 +90,25 @@ defmodule AdventOfCode2024.Days.Day08 do
       |> Stream.map(&String.split(&1, "", trim: true))
       |> Enum.to_list()
 
-    for {row, row_index} <-
-          Enum.with_index(parsed_input, fn element, index -> {element, index} end),
-        {element, element_index} <-
-          Enum.with_index(row, fn element, index -> {element, index} end),
-        into: %{} do
-      {"#{element_index}-#{row_index}", element}
-    end
+    grid =
+      for {row, row_index} <-
+            Enum.with_index(parsed_input, fn element, index -> {element, index} end),
+          {element, element_index} <-
+            Enum.with_index(row, fn element, index -> {element, index} end),
+          into: %{} do
+        {"#{element_index}-#{row_index}", element}
+      end
+
+    antennas =
+      grid
+      |> Enum.reduce(%{}, fn
+        {_coords, "."}, acc ->
+          acc
+
+        {coords, antenna}, acc ->
+          Map.update(acc, antenna, [to_point(coords)], fn x -> [to_point(coords) | x] end)
+      end)
+
+    {grid, antennas}
   end
 end
