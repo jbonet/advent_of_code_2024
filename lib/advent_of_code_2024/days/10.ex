@@ -17,11 +17,11 @@ defmodule AdventOfCode2024.Days.Day10 do
   end
 
   defp get_trails(input) do
-    trailheads = find_trailheads(input)
+    neighbors = build_neighbors(input)
 
     input
-    |> build_neighbors()
-    |> start_trails(trailheads)
+    |> find_trailheads()
+    |> Enum.reduce([], fn trailhead, acc -> [get_next_trail(neighbors, trailhead) | acc] end)
   end
 
   defp find_trailheads(input) do
@@ -48,14 +48,6 @@ defmodule AdventOfCode2024.Days.Day10 do
         acc
       end
     end)
-  end
-
-  defp start_trails(neighbors, trailheads) do
-    trailheads
-    |> Enum.reduce([], fn trailhead, acc ->
-      [get_next_trail(neighbors, trailhead) | acc]
-    end)
-    |> IO.inspect()
   end
 
   defp get_next_trail_neighbors(_neighbors, [], _trail_ends) do
