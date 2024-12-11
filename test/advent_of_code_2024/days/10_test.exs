@@ -3,7 +3,7 @@ defmodule AdventOfCode2024.Days.Day10Test do
 
   alias AdventOfCode2024.Days.Day10
 
-  describe("Day 19") do
+  describe("Day 10") do
     setup do
       %{input: Day10.get_input()}
     end
@@ -13,7 +13,7 @@ defmodule AdventOfCode2024.Days.Day10Test do
     end
 
     test "part 2", %{input: input} do
-      assert Day10.part2(input) == nil
+      assert Day10.part2(input) == 81
     end
   end
 end
