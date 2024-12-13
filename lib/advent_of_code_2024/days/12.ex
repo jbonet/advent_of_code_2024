@@ -51,7 +51,8 @@ defmodule AdventOfCode2024.Days.Day12 do
   end
 
   defp build_adjacency_groups(garden) do
-    Enum.reduce(garden, {[], MapSet.new()}, fn {location, plant} = plot, {groups, visited} = acc ->
+    Enum.reduce(garden, {[], MapSet.new()}, fn {location, plant} = plot,
+                                               {groups, visited} = acc ->
       if MapSet.member?(visited, plot) do
         IO.puts("ALready visited #{inspect(plot)}")
         acc
@@ -108,11 +109,11 @@ defmodule AdventOfCode2024.Days.Day12 do
         already_visited = MapSet.put(already_visited, adjacent_plant)
 
         {get_next_plant(
-          garden,
-          MapSet.to_list(adjacent),
-          already_visited,
-          MapSet.union(group, adjacent)
-        ), already_visited}
+           garden,
+           MapSet.to_list(adjacent),
+           already_visited,
+           MapSet.union(group, adjacent)
+         ), already_visited}
       end
 
     get_next_plant(garden, rest, already_visited, MapSet.union(group, res))
