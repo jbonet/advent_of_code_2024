@@ -14,7 +14,7 @@ defmodule AdventOfCode2024.Days.Day14 do
     size = get_size()
 
     input
-    |> simulate(size)
+    |> simulate(size, 100)
     |> Enum.map(fn %{point: point} -> point end)
     |> build_quadrants(size)
     |> Stream.map(fn {_, v} -> length(v) end)
@@ -22,22 +22,38 @@ defmodule AdventOfCode2024.Days.Day14 do
   end
 
   def part2(input) do
+    size = get_size()
 
+    case simulate(input, size) do
+      {:found, seconds} -> seconds
+    end
   end
 
-  def simulate(input, size) do
-    move(input, size, 100)
+  def simulate(input, size, simulations \\ -1) do
+    move(input, size, simulations)
   end
 
-  defp move(input, size, rounds \\ 1)
-  defp move(input, _size, 0), do: input
-  defp move(input, size, rounds) do
-#    IO.puts("Move (Remaining: #{rounds})")
+  defp move(input, size, max_seconds, seconds \\ 1)
+  defp move(input, _size, max_seconds, seconds) when seconds > max_seconds and max_seconds > 0, do: input
+  defp move(input, {w, h} = size, max_seconds, seconds) do
+    IO.puts("#{seconds} seconds")
     new_input =
       do_move(input, size)
-#      |> IO.inspect(label: "after_moving")
 
-    move(new_input, size, rounds - 1)
+    if max_seconds == -1 do
+      found_tree =
+      new_input
+      |> build_grid(size)
+      |> check_grid({w - 1, h - 1})
+
+      if found_tree do
+        {:found, seconds}
+      else
+        move(new_input, size, max_seconds, seconds + 1)
+      end
+    else
+      move(new_input, size, max_seconds, seconds + 1)
+    end
   end
 
   defp do_move(robots, size, result \\ [])
@@ -48,8 +64,6 @@ defmodule AdventOfCode2024.Days.Day14 do
       x, mod -> rem(x, mod)
     end
     new_location = {get_new_position.(x + vx, width), get_new_position.(y + vy, height)}
-
-#    IO.puts("Move #{inspect(point)} to: #{inspect(new_location)}")
 
     do_move(rest, size, [%{robot | point: new_location} | moved])
   end
@@ -62,13 +76,36 @@ defmodule AdventOfCode2024.Days.Day14 do
     end)
   end
 
+  def check_grid(grid, {_, height}) when height < 0, do: false
+  def check_grid(grid, {width, height}) do
+    if check_row(grid, width, height) do
+      true
+    else
+      check_grid(grid, {width, height - 1})
+    end
+  end
+
+  def check_row(grid, width, y) do
+    0..width
+    |> Enum.map_join("", fn x ->
+
+      size = grid |> Map.get({x, y}) |> MapSet.size()
+      if size == 0, do: " ", else: "#"
+    end)
+    # |> IO.inspect(label: "line of width: #{width}, at Y: #{y}")
+    |> String.contains?("#######")
+  end
+
   defp print_grid(grid, {width, height}) do
     for y <- 0..height - 1 do
       for x <- 0..width - 1 do
-        IO.write(MapSet.size(grid[{x, y}]))
+        size = MapSet.size(grid[{x, y}])
+        IO.write((if size == 0, do: " ", else: "#"))
       end
       IO.puts("")
     end
+
+    grid
   end
 
   defp build_quadrants(locations, {width, height}) do
