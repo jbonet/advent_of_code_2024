@@ -13,7 +13,7 @@ defmodule AdventOfCode2024.Days.Day12Test do
     end
 
     test "part 2", %{input: input} do
-      assert Day12.part2(input) == nil
+      assert Day12.part2(input) == 1206
     end
   end
 end
