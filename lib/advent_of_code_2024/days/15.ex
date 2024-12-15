@@ -11,11 +11,30 @@ defmodule AdventOfCode2024.Days.Day15 do
     |> Enum.sum()
   end
 
-  def part2(input) do
+  def part2({{grid, width, height}, moveset}) do
+    grid
+    |> expand_warehouse()
+    |> print_grid({width * 2, height})
   end
 
   defp find_starting_position(grid) do
     grid |> Enum.find(fn {_, cell} -> cell == "@" end) |> elem(0)
+  end
+
+  defp expand_warehouse(grid) do
+    Enum.reduce(grid, %{}, fn {{x, y}, value}, acc ->
+      modify = [{2 * x, y}, {2 * x + 1, y}]
+      expanded = case value do
+        "#" -> ["#", "#"]
+        "O" -> ["[", "]"]
+        "@" -> ["@", "."]
+        "." -> [".", "."]
+      end
+
+      expanded
+      |> Enum.zip(modify)
+      |> Enum.reduce(acc, fn {new_value, new_position}, acc -> Map.put(acc, new_position, new_value) end)
+    end)
   end
 
   defp apply_moveset(grid, [], position), do: grid
@@ -55,45 +74,27 @@ defmodule AdventOfCode2024.Days.Day15 do
 
       obstacle ->
         # Obstacle. Check if we can push it
-        # adjacent_position |> IO.inspect(label: "Adjacent position")
-        # |> IO.inspect(label: "Next position")
-        next_position = {ax + vx, ay + vy}
 
-        case grid[next_position] do
-          "#" ->
-            # Can't push the box
-            {grid, {x, y}}
+        if current_move in ["<", ">"] do
+          case get_next_free_or_wall(grid, {x, y}, {vx, vy}, []) do
+            {:free, next_position, positions} ->
 
-          "O" ->
-            # IO.puts("More than a single box in the way! Check all the way until next free or wall.")
-            case get_next_free_or_wall(grid, {x, y}, {vx, vy}, []) do
-              {:free, next_position, positions} ->
-                # IO.puts("Move everything from #{inspect(current_position)} to #{inspect(next_position)}")
+              grid =
+                positions
+                |> Enum.reduce(grid, fn new_obstacle_position, acc ->
+                  Map.put(acc, new_obstacle_position, "O")
+                end)
+                |> Map.put(adjacent_position, "@")
+                |> Map.put(current_position, ".")
 
-                grid =
-                  positions
-                  |> Enum.reduce(grid, fn new_obstacle_position, acc ->
-                    Map.put(acc, new_obstacle_position, "O")
-                  end)
-                  |> Map.put(adjacent_position, "@")
-                  |> Map.put(current_position, ".")
+              {grid, adjacent_position}
 
-                {grid, adjacent_position}
-
-              {:wall, next_position, _} ->
-                # IO.puts("Can't move the obstacles, hit a wall!")
-                {grid, current_position}
-            end
-
-          "." ->
-            # Push the box
-            grid =
-              grid
-              |> Map.put(next_position, obstacle)
-              |> Map.put(adjacent_position, "@")
-              |> Map.put(current_position, ".")
-
-            {grid, adjacent_position}
+            {:wall, next_position, _} ->
+              {grid, current_position}
+          end
+        else
+          IO.puts("Vertical move, needs a bit of work here :)")
+          {grid, current_position}
         end
     end
   end
